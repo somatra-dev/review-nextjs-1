@@ -1,4 +1,4 @@
-import { PostType } from "../libs/posts";
+import { PostType } from "../lib/posts";
 
 function PostCard({
     userId = 0,

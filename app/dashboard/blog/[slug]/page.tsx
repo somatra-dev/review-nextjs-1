@@ -1,10 +1,7 @@
-import PostCard from "@/app/components/PostCard";
-
-async function fetchPost(id: string) {
-    const data = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/${id}`);
-    const post = await data.json();
-    return post;
-}
+import CardCustom from "@/components/CardCustom";
+import detailCard from "@/components/detailCard";
+import { fetchDetaildetail } from "@/lib/data/fetchdetail";
+import { fetchDetailPost } from "@/lib/data/fetchPost";
 
 
 export default async function BlogPage(
@@ -14,17 +11,18 @@ export default async function BlogPage(
 
 ) {
     const { slug } = await params;
-    const post = await fetchPost(slug);
+    const detail = await fetchDetailPost(slug);
+
 
     return (
-        <div className="p-24 text-center">
-            <PostCard key={post.id}
-                userId={post.userId}
-                id={post.id}
-                title={post.title}
-                body={post.body}
+        <div className="flex justify-center items-center mt-20">
+            <CardCustom key={detail.id}
+                userId={detail.userId}
+                id={detail.id}
+                title={detail.title}
+                body={detail.body}
             >
-            </PostCard>
+            </CardCustom>
         </div>
     )
 }

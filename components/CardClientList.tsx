@@ -1,15 +1,16 @@
-import Link from 'next/link';
-import PostCard from '../../components/PostCard';
-import { PostType } from '../../lib/posts';
-import { fetchPosts } from '@/lib/data/fetchPost';
-import CardCustom from '@/components/CardCustom';
+"use client";
 
-export default async function DashboardPage() {
+import { use } from "react";
+import CardCustom from "./CardCustom";
+import { PostType } from "@/lib/posts";
+import Link from "next/link";
 
-    const posts = await fetchPosts();
 
+export default function CardClientList({ fetchPosts }: { fetchPosts: Promise<PostType[]> }) {
+
+    const posts = use(fetchPosts);
+    console.log("posts in client card list", posts);
     return (
-
         <div className="grid grid-cols-4 gap-1 cursor-pointer p-1.5 items-center justify-between">
             {
                 posts.map((post) => (
@@ -23,7 +24,6 @@ export default async function DashboardPage() {
                         >
                         </CardCustom>
                     </Link>
-
                 ))
             }
         </div>
