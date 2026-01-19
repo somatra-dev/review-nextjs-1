@@ -28,7 +28,7 @@ export default function Home() {
       <CardCustom
         userId={1}
         id={1}
-        body="សួស្តី អ្នកគឺជាអ្នកអានដ៏អស្ចារ្យ!"
+        body="សួស្តី!"
         title="ស្វាគមន៍មកកាន់ Next.js"
       />
 
