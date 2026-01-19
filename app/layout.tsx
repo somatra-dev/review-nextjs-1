@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Moulpali } from "next/font/google";
 import "./globals.css";
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 import Loading from "@/components/Loading";
 
 const inter = Inter({
@@ -31,9 +31,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${moulpali.variable} antialiased`}
       >
-        <Suspense fallback={<Loading />}>
-          {children}
-        </Suspense>
+      {children}
       </body>
     </html>
   );

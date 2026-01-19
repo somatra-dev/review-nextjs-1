@@ -1,11 +1,9 @@
-import { Button } from "@/components/ui/button";
-import PostCard from "../components/PostCard";
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp";
-import { ArrowUpToLine } from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot} from "@/components/ui/input-otp";
+import {ArrowUpToLine} from "lucide-react";
 import CardCustom from "@/components/CardCustom";
 import CardClientList from "@/components/CardClientList";
-import { fetchPosts } from "@/lib/data/fetchPost";
-import Loading from "@/components/Loading";
+import {fetchPosts} from "@/lib/data/fetchPost";
 
 
 export default function Home() {
