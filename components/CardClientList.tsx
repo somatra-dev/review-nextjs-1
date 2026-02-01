@@ -9,7 +9,6 @@ import Link from "next/link";
 export default function CardClientList({ fetchPosts }: { fetchPosts: Promise<PostType[]> }) {
 
     const posts = use(fetchPosts);
-    console.log("posts in client card list", posts);
     return (
         <div className="grid grid-cols-4 gap-1 cursor-pointer p-1.5 items-center justify-between">
             {

@@ -1,13 +1,13 @@
 "use client"
 
-import {Button} from "@/components/ui/button"
-import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/components/ui/card"
-import {Input} from "@/components/ui/input"
-import {useForm} from "react-hook-form";
-import {LoginRequest} from "@/lib/login";
-import {zodResolver} from "@hookform/resolvers/zod"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { useForm } from "react-hook-form";
+import { LoginRequest } from "@/lib/login";
+import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const loginSchema = z.object({
     email: z.email("Please enter a valid email address"),
@@ -29,23 +29,29 @@ export default function LoginForm() {
         },
     })
 
+
+
     const loginSubmit = (data: LoginRequest) => console.log(data);
+    console.log(form.watch("email"));
+    console.log(form.watch("password"));
 
     return (
         <Card className="w-1/4">
+
             <CardHeader>
-                <CardTitle>Login to your account</CardTitle>
+                <CardTitle className="text-2xl">Login to your account</CardTitle>
                 <CardDescription>
                     Enter your email below to login to your account
                 </CardDescription>
             </CardHeader>
+
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(loginSubmit)} className="space-y-4">
                         <FormField
                             control={form.control}
                             name="email"
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Email</FormLabel>
                                     <FormControl>
@@ -55,14 +61,14 @@ export default function LoginForm() {
                                             {...field}
                                         />
                                     </FormControl>
-                                    <FormMessage/>
+                                    <FormMessage /> {/* display validation error message */}
                                 </FormItem>
                             )}
                         />
                         <FormField
                             control={form.control}
                             name="password"
-                            render={({field}) => (
+                            render={({ field }) => (
                                 <FormItem>
                                     <div className="flex items-center">
                                         <FormLabel>Password</FormLabel>
@@ -74,9 +80,9 @@ export default function LoginForm() {
                                         </a>
                                     </div>
                                     <FormControl>
-                                        <Input type="password" {...field}/>
+                                        <Input type="password" {...field} />
                                     </FormControl>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />

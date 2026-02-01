@@ -31,7 +31,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${moulpali.variable} antialiased`}
       >
-      {children}
+        {children}
       </body>
     </html>
   );
