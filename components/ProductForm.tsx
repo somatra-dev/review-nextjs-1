@@ -7,6 +7,7 @@ import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 
+import { createProduct, fetchCategories, uploadFile, type PlatziCategory } from "@/lib/api/platzi"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -30,25 +31,19 @@ import {
     InputGroupText,
     InputGroupTextarea,
 } from "@/components/ui/input-group"
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "./ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import ImageUpload from "./file-upload/image-upload"
+import { useState, useEffect } from 'react';
 
 
-const category = [
-    { label: "Child", value: "ch" },
-    { label: "Teeneger", value: "tg" },
-    { label: "Old", value: "old" }
-] as const
-
-
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024
-const MAX_IMAGE_FILES = 5
+const MAX_IMAGE_SIZE = 2 * 1024
+const MAX_IMAGE_FILES = 1
 
 const formSchema = z.object({
     name: z
         .string()
-        .min(5, "Bug title must be at least 5 characters.")
-        .max(32, "Bug title must be at most 32 characters."),
+        .min(5, "Product name must be at least 5 characters.")
+        .max(32, "Product name must be at most 32 characters."),
     description: z
         .string()
         .min(20, "Description must be at least 20 characters.")
@@ -61,12 +56,11 @@ const formSchema = z.object({
         }, {
             message: "Price must be a positive number.",
         }),
-    category: z
+    categoryId: z
         .string()
         .min(1, "Please select your product category.")
-        .refine((val) => val !== "auto", {
-            message:
-                "Auto-detection is not allowed. Please select a specific language.",
+        .refine((val) => Number.isInteger(Number(val)) && Number(val) > 0, {
+            message: "Please select a valid category.",
         }),
     image: z
         .array(z.instanceof(File))
@@ -82,24 +76,63 @@ const formSchema = z.object({
 })
 
 export default function ProductForm() {
+    const [categories, setCategories] = useState<PlatziCategory[]>([])
+    const [categoriesError, setCategoriesError] = useState<string | null>(null)
+
+    useEffect(() => {
+        let isMounted = true
+        const loadCategories = async () => {
+            try {
+                const data = await fetchCategories()
+                if (isMounted) {
+                    setCategories(data)
+                    setCategoriesError(null)
+                }
+            } catch (error) {
+                if (isMounted) {
+                    setCategoriesError(error instanceof Error ? error.message : "Failed to load categories.")
+                }
+            }
+        }
+        loadCategories()
+        return () => {
+            isMounted = false
+        }
+    }, [])
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
             description: "",
             price: "",
-            category: "",
+            categoryId: "",
             image: [],
         },
     })
 
-    console.log(form.watch("price"));
-    console.log(form.watch("image"));
+    async function onSubmit(data: z.infer<typeof formSchema>) {
+        try {
+            const uploadResults = await Promise.all(data.image.map((file) => uploadFile(file)))
+            const imageUrls = uploadResults.map((upload) => upload.location)
 
-    function onSubmit(_data: z.infer<typeof formSchema>) {
-        toast.success("Product created", {
-            position: "top-right",
-        })
+            await createProduct({
+                title: data.name,
+                price: Number(data.price),
+                description: data.description,
+                categoryId: Number(data.categoryId),
+                images: imageUrls,
+            })
+
+            toast.success("Product created", {
+                position: "top-right",
+            })
+            form.reset()
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to create product.", {
+                position: "top-right",
+            })
+        }
     }
 
     return (
@@ -153,6 +186,9 @@ export default function ProductForm() {
                                                 id="form-rhf-demo-price"
                                                 aria-invalid={fieldState.invalid}
                                                 placeholder="Please enter product price"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
                                                 autoComplete="off"
                                             />
 
@@ -166,7 +202,7 @@ export default function ProductForm() {
 
                                 {/* Controller category */}
                                 <Controller
-                                    name="category"
+                                    name="categoryId"
                                     control={form.control}
                                     render={({ field, fieldState }) => (
                                         <Field orientation="responsive" data-invalid={fieldState.invalid}>
@@ -183,18 +219,26 @@ export default function ProductForm() {
                                                 onValueChange={field.onChange}
                                             >
                                                 <SelectTrigger
-                                                    id="form-rhf-select-language"
+                                                    id="form-rhf-select-category"
                                                     aria-invalid={fieldState.invalid}
                                                     className="min-w-30"
                                                 >
                                                     <SelectValue placeholder="Select" />
                                                 </SelectTrigger>
                                                 <SelectContent position="item-aligned">
-                                                    <SelectItem value="auto">Auto</SelectItem>
-                                                    <SelectSeparator />
-                                                    {category.map((category) => (
-                                                        <SelectItem key={category.value} value={category.value}>
-                                                            {category.label}
+                                                    {categories.length === 0 && !categoriesError && (
+                                                        <SelectItem value="loading" disabled>
+                                                            Loading categories...
+                                                        </SelectItem>
+                                                    )}
+                                                    {categoriesError && (
+                                                        <SelectItem value="error" disabled>
+                                                            {categoriesError}
+                                                        </SelectItem>
+                                                    )}
+                                                    {categories.map((category) => (
+                                                        <SelectItem key={category.id} value={String(category.id)}>
+                                                            {category.name}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
@@ -272,11 +316,11 @@ export default function ProductForm() {
 
             <CardFooter>
                 <Field orientation="horizontal">
-                    <Button type="button" variant="outline" onClick={() => form.reset()}>
+                    <Button type="button" variant="outline" onClick={() => form.reset()} disabled={form.formState.isSubmitting}>
                         Reset
                     </Button>
-                    <Button type="submit" form="form-rhf-demo">
-                        Submit
+                    <Button type="submit" form="form-rhf-demo" disabled={form.formState.isSubmitting}>
+                        {form.formState.isSubmitting ? "Submitting..." : "Submit"}
                     </Button>
                 </Field>
             </CardFooter>
